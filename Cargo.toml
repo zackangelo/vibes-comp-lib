@@ -1,10 +1,16 @@
 [package]
-name = "vibes_comp_lib"
+name = "viber"
 version = "0.1.0"
 edition = "2021"
+
+[lib]
+name = "libviber"
+path = "src/lib.rs"
 
 [dependencies]
 anyhow = "1.0.94"
 convert_case = "0.6.0"
 serde = { version = "1.0.216", features = ["derive"] }
 serde_json = "1.0.133"
+serde_yaml = "0.8"
+structopt = "0.3"
