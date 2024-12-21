@@ -47,6 +47,7 @@ pub fn list_files_in_directory(path: &str) -> io::Result<Vec<String>> {
             }
         }
     }
+
     Ok(files)
 }
 
@@ -116,4 +117,9 @@ pub fn read_files_in_directory(path: &str) -> io::Result<HashMap<String, String>
     }
 
     Ok(files_contents)
+}
+
+
+pub fn escape_template_literal(content: &str) -> String {
+    content.replace("`", "\\`").replace("${", "\\${") // Escape template literal interpolation
 }

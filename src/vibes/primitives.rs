@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
-use crate::utils::{ensure_directory, enumerate_directories, extract_frontmatter, kebab_to_pascal_case, list_files_in_directory, read_file_contents};
+use crate::utils::{ensure_directory, enumerate_directories, escape_template_literal, extract_frontmatter, kebab_to_pascal_case, list_files_in_directory, read_file_contents};
 use crate::enrichments::read_description_file;
 
 pub struct VibePrimitive {
@@ -24,6 +24,7 @@ pub fn vibe_primitives() -> Vec<VibePrimitive> {
 
     for dir in directories {
         let item = vibe_primitive(&dir);
+
         result.push(item);
     }
 
@@ -71,7 +72,13 @@ pub fn vibe_primitive(name: &str) -> VibePrimitive {
         .unwrap_or(Option::None);
 
 
-    let source: HashMap<String, String> = HashMap::new();
+    let mut source: HashMap<String, String> = HashMap::new();
+    for file in &files {
+        let path = format!("./vibes/apps/web/vibes/soul/primitives/{}/{}", name, file);
+        if let Ok(content) = read_file_contents(&path) {
+            source.insert(file.clone(), escape_template_literal(&content));
+        }
+    }
 
     let meta = q(name);
 

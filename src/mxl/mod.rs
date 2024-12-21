@@ -8,6 +8,7 @@ mod components;
 pub use components::generate_library_content;
 pub use components::generate_library_content_xmlish;
 pub use components::generate_library_content_xmlish2;
+use crate::utils::escape_template_literal;
 use crate::vibes::VibePrimitive;
 
 pub fn setup() -> Result<(), io::Error>{
@@ -137,6 +138,3 @@ fn write_ts_component2(output: &mut String, component: &VibePrimitive) {
 
 
 
-fn escape_template_literal(content: &str) -> String {
-    content.replace("`", "\\`").replace("${", "\\${") // Escape template literal interpolation
-}
