@@ -75,6 +75,25 @@ pub fn vibe_primitive(name: &str) -> VibePrimitive {
 
     let meta = q(name);
 
+    let mut registry_dependencies = Vec::new();
+    let mut dependencies = Vec::new();
+
+    if let Some(m) = meta {
+        // swap them because they be silly
+        registry_dependencies = m.dependencies;
+        dependencies = m.registry_dependencies;
+    }
+
+    // TODO: Uniq
+    for enrichment in crate::enrichments::read_dependencies(name) {
+        dependencies.push(enrichment);
+    }
+
+    // TODO: Uniq
+    for enrichment in crate::enrichments::read_registry_dependencies(name) {
+        registry_dependencies.push(enrichment);
+    }
+
     VibePrimitive {
         component_name,
         doc,
@@ -85,8 +104,8 @@ pub fn vibe_primitive(name: &str) -> VibePrimitive {
         import,
         props,
         // swap the names
-        registry_dependencies: meta.clone().map(|m| m.dependencies).unwrap_or_else(Vec::new),
-        dependencies: meta.map(|m| m.registry_dependencies).unwrap_or_else(Vec::new),
+        registry_dependencies,
+        dependencies,
     }
 }
 

@@ -38,6 +38,11 @@ fn main() -> Result<()> {
     let mut output_file = File::create("./out/prompt-components.txt")?;
     output_file.write_all(lib_content.as_bytes())?;
 
+
+    let ts_content = mxl::generate_ts_file_content2();
+    let mut output_file = File::create("./out/component-library2.ts")?;
+    output_file.write_all(ts_content.as_bytes())?;
+
     let lib_content = mxl::generate_library_content_xmlish2();
     let mut output_file = File::create("./out/prompt-components2.txt")?;
     output_file.write_all(lib_content.as_bytes())?;
