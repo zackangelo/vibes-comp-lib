@@ -7,6 +7,8 @@ mod components;
 
 pub use components::generate_library_content;
 pub use components::generate_library_content_xmlish;
+pub use components::generate_library_content_xmlish2;
+
 pub fn setup() -> Result<(), io::Error>{
     if !fs::metadata("./out").is_ok() {
         fs::create_dir_all("./out")?;

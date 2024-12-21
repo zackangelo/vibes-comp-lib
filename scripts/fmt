@@ -1,3 +1,5 @@
 #!/bin/bash
 
+# Formats the enrichment files
+
 npx @biomejs/biome format --write ./enrichment

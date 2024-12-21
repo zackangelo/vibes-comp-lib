@@ -11,6 +11,8 @@ pub struct VibeSection {
     pub dependencies: Vec<String>,
     pub registry_dependencies: Vec<String>,
     pub source: HashMap<String, String>,
+    pub props: Option<String>,
+    pub example: Option<String>,
 }
 
 pub fn vibe_sections() -> Vec<VibeSection> {
@@ -47,18 +49,18 @@ pub fn vibe_section(name: &str) -> VibeSection {
         description = hm.get("description").map(|s| s.to_owned());
     }
 
-    // let path = format!("./vibes/apps/web/vibes/soul/examples/sections/{}/index.tsx", name);
-    // let example = read_file_contents(&path)
-    //     .map(|o| Option::Some(o.to_owned()))
-    //     .unwrap_or(Option::None);
+    let path = format!("./vibes/apps/web/vibes/soul/examples/sections/{}/index.tsx", name);
+    let example = read_file_contents(&path)
+        .map(|o| Option::Some(o.to_owned()))
+        .unwrap_or(Option::None);
 
 
     ensure_directory(&format!("./enrichment/{}", name)).expect("failed to create directory");
 
-    // let path = format!("./enrichment/{}/props.tsx", name);
-    // let props = read_file_contents(&path)
-    //     .map(|o| Option::Some(o.to_owned()))
-    //     .unwrap_or(Option::None);
+    let path = format!("./enrichment/{}/props.tsx", name);
+    let props = read_file_contents(&path)
+        .map(|o| Option::Some(o.to_owned()))
+        .unwrap_or(Option::None);
 
     let mut source: HashMap<String, String> = HashMap::new();
     if let Ok(files) = read_files_in_directory(&path) {
@@ -74,6 +76,8 @@ pub fn vibe_section(name: &str) -> VibeSection {
         doc,
         description,
         source,
+        props,
+        example,
         // swap the names
         registry_dependencies: meta.clone().map(|m| m.dependencies).unwrap_or_else(Vec::new),
         dependencies: meta.map(|m| m.registry_dependencies).unwrap_or_else(Vec::new),
@@ -96,194 +100,198 @@ struct VibeMeta
 {
     pub name: String,
     pub dependencies: Vec<String>,
+    #[serde(rename = "registryDependencies")]
     pub registry_dependencies: Vec<String>,
     pub files: Vec<String>,
 }
 
+// extracted from ~/vibes/apps/web/vibes/soul/sections.ts
 const JSON : &str = r#"[
   {
-    name: 'accordions',
-    dependencies: ['clsx', '@radix-ui/react-accordion'],
-    registryDependencies: [],
-    files: ['primitives/accordions/index.tsx'],
+    "name": "accordions",
+    "dependencies": ["clsx", "@radix-ui/react-accordion"],
+    "registryDependencies": [],
+    "files": ["primitives/accordions/index.tsx"]
   },
   {
-    name: 'alert',
-    dependencies: ['clsx', 'lucide-react'],
-    registryDependencies: [],
-    files: ['primitives/alert/index.tsx'],
+    "name": "alert",
+    "dependencies": ["clsx", "lucide-react"],
+    "registryDependencies": [],
+    "files": ["primitives/alert/index.tsx"]
   },
   {
-    name: 'animated-link',
-    dependencies: [],
-    registryDependencies: [],
-    files: ['primitives/animated-link/index.tsx'],
-  },
-
-  {
-    name: 'badge',
-    dependencies: ['clsx'],
-    registryDependencies: [],
-    files: ['primitives/badge/index.tsx'],
+    "name": "animated-link",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": ["primitives/animated-link/index.tsx"]
   },
   {
-    name: 'banner',
-    dependencies: ['clsx', 'lucide-react'],
-    registryDependencies: [],
-    files: ['primitives/banner/index.tsx'],
+    "name": "badge",
+    "dependencies": ["clsx"],
+    "registryDependencies": [],
+    "files": ["primitives/badge/index.tsx"]
   },
   {
-    name: 'blog-post-card',
-    dependencies: ['clsx'],
-    registryDependencies: [],
-    files: ['primitives/blog-post-card/index.tsx'],
+    "name": "banner",
+    "dependencies": ["clsx", "lucide-react"],
+    "registryDependencies": [],
+    "files": ["primitives/banner/index.tsx"]
   },
   {
-    name: 'breadcrumbs',
-    dependencies: ['clsx', 'lucide-react'],
-    registryDependencies: [],
-    files: ['primitives/breadcrumbs/index.tsx'],
+    "name": "blog-post-card",
+    "dependencies": ["clsx"],
+    "registryDependencies": [],
+    "files": ["primitives/blog-post-card/index.tsx"]
   },
   {
-    name: 'button',
-    dependencies: ['clsx', 'lucide-react'],
-    registryDependencies: [],
-    files: ['primitives/button/index.tsx'],
+    "name": "breadcrumbs",
+    "dependencies": ["clsx", "lucide-react"],
+    "registryDependencies": [],
+    "files": ["primitives/breadcrumbs/index.tsx"]
   },
   {
-    name: 'button-link',
-    dependencies: ['clsx'],
-    registryDependencies: [],
-    files: ['primitives/button-link/index.tsx'],
+    "name": "button",
+    "dependencies": ["clsx", "lucide-react"],
+    "registryDependencies": [],
+    "files": ["primitives/button/index.tsx"]
   },
   {
-    name: 'calendar',
-    dependencies: ['clsx', 'lucide-react', 'react-day-picker'],
-    registryDependencies: [],
-    files: ['primitives/calendar.tsx'],
+    "name": "button-link",
+    "dependencies": ["clsx"],
+    "registryDependencies": [],
+    "files": ["primitives/button-link/index.tsx"]
   },
   {
-    name: 'card',
-    dependencies: ['clsx', 'lucide-react'],
-    registryDependencies: [],
-    files: ['primitives/card/index.tsx'],
+    "name": "calendar",
+    "dependencies": ["clsx", "lucide-react", "react-day-picker"],
+    "registryDependencies": [],
+    "files": ["primitives/calendar.tsx"]
   },
   {
-    name: 'card-carousel',
-    dependencies: ['clsx'],
-    registryDependencies: ['carousel'],
-    files: ['primitives/card-carousel/index.tsx'],
+    "name": "card",
+    "dependencies": ["clsx", "lucide-react"],
+    "registryDependencies": [],
+    "files": ["primitives/card/index.tsx"]
   },
   {
-    name: 'carousel',
-    dependencies: ['embla-carousel-react', 'lucide-react'],
-    registryDependencies: [],
-    files: ['primitives/carousel/index.tsx'],
+    "name": "card-carousel",
+    "dependencies": ["clsx"],
+    "registryDependencies": ["carousel"],
+    "files": ["primitives/card-carousel/index.tsx"]
   },
   {
-    name: 'checkbox',
-    dependencies: ['clsx', 'lucide-react', '@radix-ui/react-checkbox'],
-    registryDependencies: [],
-    files: ['primitives/checkbox/index.tsx'],
+    "name": "carousel",
+    "dependencies": ["embla-carousel-react", "lucide-react"],
+    "registryDependencies": [],
+    "files": ["primitives/carousel/index.tsx"]
   },
   {
-    name: 'counter',
-    dependencies: ['lucide-react'],
-    registryDependencies: [],
-    files: ['primitives/counter/index.tsx'],
+    "name": "checkbox",
+    "dependencies": ["clsx", "lucide-react", "@radix-ui/react-checkbox"],
+    "registryDependencies": [],
+    "files": ["primitives/checkbox/index.tsx"]
   },
   {
-    name: 'cursor-pagination',
-    dependencies: ['lucide-react', 'nuqs', 'clsx'],
-    registryDependencies: [],
-    files: ['primitives/cursor-pagination/index.tsx'],
+    "name": "counter",
+    "dependencies": ["lucide-react"],
+    "registryDependencies": [],
+    "files": ["primitives/counter/index.tsx"]
   },
   {
-    name: 'dropdown',
-    dependencies: ['clsx', 'lucide-react', '@radix-ui/react-dropdown-menu'],
-    registryDependencies: [],
-    files: ['primitives/dropdown/index.tsx'],
+    "name": "cursor-pagination",
+    "dependencies": ["lucide-react", "nuqs", "clsx"],
+    "registryDependencies": [],
+    "files": ["primitives/cursor-pagination/index.tsx"]
   },
   {
-    name: 'favorite',
-    dependencies: ['clsx'],
-    registryDependencies: [],
-    files: [
-      'primitives/favorite/index.tsx',
-      'primitives/favorite/heart.tsx',
-      'primitives/favorite/styles.css',
-    ],
+    "name": "dropdown",
+    "dependencies": ["clsx", "lucide-react", "@radix-ui/react-dropdown-menu"],
+    "registryDependencies": [],
+    "files": ["primitives/dropdown/index.tsx"]
   },
   {
-    name: 'feature',
-    dependencies: ['clsx', 'lucide-react'],
-    registryDependencies: ['button'],
-    files: ['sections/feature/index.tsx', 'primitives/icon/index.tsx'],
+    "name": "favorite",
+    "dependencies": ["clsx"],
+    "registryDependencies": [],
+    "files": [
+      "primitives/favorite/index.tsx",
+      "primitives/favorite/heart.tsx",
+      "primitives/favorite/styles.css"
+    ]
   },
   {
-    name: 'featured-video',
-    dependencies: ['clsx'],
-    registryDependencies: ['button'],
-    files: ['sections/featured-video/index.tsx'],
+    "name": "feature",
+    "dependencies": ["clsx", "lucide-react"],
+    "registryDependencies": ["button"],
+    "files": ["sections/feature/index.tsx", "primitives/icon/index.tsx"]
   },
   {
-    name: 'input',
-    dependencies: ['clsx', 'lucide-react'],
-    registryDependencies: [],
-    files: ['primitives/input/index.tsx'],
+    "name": "featured-video",
+    "dependencies": ["clsx"],
+    "registryDependencies": ["button"],
+    "files": ["sections/featured-video/index.tsx"]
   },
   {
-    name: 'inline-email-form',
-    dependencies: ['lucide-react', '@conform-to/react', '@conform-to/zod'],
-    registryDependencies: [],
-    files: ['primitives/inline-email-form/index.tsx'],
+    "name": "input",
+    "dependencies": ["clsx", "lucide-react"],
+    "registryDependencies": [],
+    "files": ["primitives/input/index.tsx"]
   },
   {
-    name: 'pagination',
-    dependencies: ['clsx'],
-    registryDependencies: [],
-    files: ['primitives/pagination/index.tsx'],
+    "name": "inline-email-form",
+    "dependencies": ["lucide-react", "@conform-to/react", "@conform-to/zod"],
+    "registryDependencies": [],
+    "files": ["primitives/inline-email-form/index.tsx"]
   },
   {
-    name: 'price-label',
-    dependencies: ['clsx'],
-    registryDependencies: [],
-    files: ['primitives/price-label/index.tsx'],
+    "name": "pagination",
+    "dependencies": ["clsx"],
+    "registryDependencies": [],
+    "files": ["primitives/pagination/index.tsx"]
   },
   {
-    name: 'product-card',
-    dependencies: ['clsx'],
-    registryDependencies: ['badge', 'checkbox', 'price-label'],
-    files: ['primitives/product-card/index.tsx', 'primitives/product-card/compare.tsx'],
+    "name": "price-label",
+    "dependencies": ["clsx"],
+    "registryDependencies": [],
+    "files": ["primitives/price-label/index.tsx"]
   },
   {
-    name: 'products-carousel',
-    dependencies: ['clsx'],
-    registryDependencies: ['product-card', 'carousel'],
-    files: ['primitives/products-carousel/index.tsx'],
+    "name": "product-card",
+    "dependencies": ["clsx"],
+    "registryDependencies": ["badge", "checkbox", "price-label"],
+    "files": [
+      "primitives/product-card/index.tsx",
+      "primitives/product-card/compare.tsx"
+    ]
   },
   {
-    name: 'products-list',
-    dependencies: [],
-    registryDependencies: ['product-card'],
-    files: ['primitives/products-list/index.tsx'],
+    "name": "products-carousel",
+    "dependencies": ["clsx"],
+    "registryDependencies": ["product-card", "carousel"],
+    "files": ["primitives/products-carousel/index.tsx"]
   },
   {
-    name: 'rating',
-    dependencies: [],
-    registryDependencies: [],
-    files: ['primitives/rating/index.tsx'],
+    "name": "products-list",
+    "dependencies": [],
+    "registryDependencies": ["product-card"],
+    "files": ["primitives/products-list/index.tsx"]
   },
   {
-    name: 'spinner',
-    dependencies: ['clsx'],
-    registryDependencies: [],
-    files: ['primitives/spinner/index.tsx'],
+    "name": "rating",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": ["primitives/rating/index.tsx"]
   },
   {
-    name: 'textarea',
-    dependencies: ['clsx'],
-    registryDependencies: [],
-    files: ['primitives/textarea/index.tsx'],
+    "name": "spinner",
+    "dependencies": ["clsx"],
+    "registryDependencies": [],
+    "files": ["primitives/spinner/index.tsx"]
   },
+  {
+    "name": "textarea",
+    "dependencies": ["clsx"],
+    "registryDependencies": [],
+    "files": ["primitives/textarea/index.tsx"]
+  }
 ]"#;

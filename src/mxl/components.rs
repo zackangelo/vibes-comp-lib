@@ -3,6 +3,7 @@ use crate::raw::RawVibesLibrary;
 use std::path::PathBuf;
 use crate::enrichments::{read_props_file, read_description_file};
 use crate::utils::{self, kebab_to_pascal_case};
+use crate::vibes::vibe_sections;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 struct LibComponentJson {
@@ -107,6 +108,72 @@ pub fn generate_library_content_xmlish(lib: &RawVibesLibrary) -> String {
 
         output.push_str("\n");
     }
+    output.push_str("\n");
+    output.to_string()
+}
+
+
+pub fn generate_library_content_xmlish2() -> String {
+    use crate::vibes::vibe_primitives;
+
+    let mut output = String::from("");
+
+    for component in vibe_primitives() {
+        let cn = &component.component_name;
+        output.push_str(&format!("<component name=\"{}\" file=\"{}\">\n", &cn, &component.import));
+
+        if let Some(str) = &component.description {
+            output.push_str(&format!("  {}\n", &str));
+        }
+
+        if let Some(str) = &component.props {
+            output.push_str("  <component_props>\n");
+            output.push_str(&indent_string(&str, 4));
+            output.push_str("\n");
+            output.push_str("  </component_props>\n");
+        }
+
+        if let Some(str) = &component.example {
+            output.push_str("  <component_example>\n");
+            output.push_str(&indent_string(str, 4));
+            output.push_str("\n");
+            output.push_str("  </component_example>\n");
+        }
+        
+        output.push_str("</component>\n");
+
+
+        output.push_str("\n");
+    }
+
+    output.push_str("\n");
+
+    for component in vibe_sections() {
+        let sn = &component.section_name;
+        output.push_str(&format!("<section name=\"{}\" file=\"{}\">\n", &sn, &component.import));
+
+        if let Some(str) = &component.description {
+            output.push_str(&format!("  {}\n", &str));
+        }
+
+        if let Some(str) = &component.props {
+            output.push_str("  <section_props>\n");
+            output.push_str(&indent_string(&str, 4));
+            output.push_str("\n");
+            output.push_str("  </section_props>\n");
+        }
+
+        if let Some(str) = &component.example {
+            output.push_str("  <section_example>\n");
+            output.push_str(&indent_string(str, 4));
+            output.push_str("\n");
+            output.push_str("  </section_example>\n");
+        }
+
+        output.push_str("</section>\n");
+        output.push_str("\n");
+    }
+
     output.push_str("\n");
     output.to_string()
 }
