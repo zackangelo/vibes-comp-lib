@@ -101,6 +101,20 @@ pub fn enumerate_directories(path: &str) -> io::Result<Vec<String>> {
     Ok(directories)
 }
 
+pub fn enumerate_files(path: &str) -> io::Result<Vec<String>> {
+    let mut files = Vec::new();
+    for entry in fs::read_dir(path)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_file() {
+            if let Some(file_name) = path.file_name() {
+                files.push(file_name.to_string_lossy().to_string());
+            }
+        }
+    }
+    Ok(files)
+}
+
 pub fn read_files_in_directory(path: &str) -> io::Result<HashMap<String, String>> {
     let mut files_contents = HashMap::new();
     let base_path = Path::new(path);

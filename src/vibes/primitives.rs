@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
-use crate::utils::{ensure_directory, enumerate_directories, escape_template_literal, extract_frontmatter, kebab_to_pascal_case, list_files_in_directory, read_file_contents};
+use crate::utils::{ensure_directory, enumerate_directories, enumerate_files, escape_template_literal, extract_frontmatter, kebab_to_pascal_case, list_files_in_directory, read_file_contents};
 use crate::enrichments::read_description_file;
 
 pub struct VibePrimitive {
@@ -23,7 +23,15 @@ pub fn vibe_primitives() -> Vec<VibePrimitive> {
     let mut result = vec![];
 
     for dir in directories {
-        let item = vibe_primitive(&dir);
+        let item = vibe_primitive_from_dir(&dir);
+
+        result.push(item);
+    }
+
+    // pick up calendar
+    let files = enumerate_files(path).unwrap();
+    for file in files {
+        let item = vibe_primitive_from_file(&file);
 
         result.push(item);
     }
@@ -33,7 +41,7 @@ pub fn vibe_primitives() -> Vec<VibePrimitive> {
 
 
 
-pub fn vibe_primitive(name: &str) -> VibePrimitive {
+pub fn vibe_primitive_from_dir(name: &str) -> VibePrimitive {
     let component_name: String = kebab_to_pascal_case(name);
 
     let import = format!("@/vibes/soul/primitives/{}", name);
@@ -76,7 +84,8 @@ pub fn vibe_primitive(name: &str) -> VibePrimitive {
     for file in &files {
         let path = format!("./vibes/apps/web/vibes/soul/primitives/{}/{}", name, file);
         if let Ok(content) = read_file_contents(&path) {
-            source.insert(file.clone(), escape_template_literal(&content));
+            let key = format!("./vibes/soul/primitives/{}/{}", name, file);
+            source.insert(key, escape_template_literal(&content));
         }
     }
 
@@ -116,6 +125,91 @@ pub fn vibe_primitive(name: &str) -> VibePrimitive {
     }
 }
 
+
+pub fn vibe_primitive_from_file(name: &str) -> VibePrimitive {
+    let n = name.replace(".tsx","");
+    let component_name: String = kebab_to_pascal_case(&n);
+
+    let import = format!("@/vibes/soul/primitives/{}", n);
+
+    let files : Vec<String> = vec![ name.to_string() ];
+
+    let path = format!("./vibes/apps/web/vibes/soul/docs/{}.mdx", n);
+    let doc = read_file_contents(&path)
+        .map(|o| Option::Some(o.to_owned()))
+        .unwrap_or(Option::None);
+
+    let mut description = Option::None;
+
+    if let Some(str) = doc.clone() {
+        let hm = extract_frontmatter(&str);
+        description = hm.get("description").map(|s| s.to_owned());
+    }
+
+    if let Some(str) = read_description_file(&name) {
+        description = Option::Some(str)
+    }
+
+
+    // calendar has 3 examples
+    let path = format!("./vibes/apps/web/vibes/soul/examples/primitives/{}/index.tsx", n);
+    let example = read_file_contents(&path)
+        .map(|o| Option::Some(o.to_owned()))
+        .unwrap_or(Option::None);
+
+
+    ensure_directory(&format!("./enrichment/{}", n)).expect("failed to create directory");
+
+    let path = format!("./enrichment/{}/props.tsx", name);
+    let props = read_file_contents(&path)
+        .map(|o| Option::Some(o.to_owned()))
+        .unwrap_or(Option::None);
+
+
+    let mut source: HashMap<String, String> = HashMap::new();
+    for file in &files {
+        let path = format!("./vibes/apps/web/vibes/soul/primitives/{}/{}", name, file);
+        if let Ok(content) = read_file_contents(&path) {
+            let key = format!("./vibes/soul/primitives/{}/{}", name, file);
+            source.insert(key, escape_template_literal(&content));
+        }
+    }
+
+    let meta = q(name);
+
+    let mut registry_dependencies = Vec::new();
+    let mut dependencies = Vec::new();
+
+    if let Some(m) = meta {
+        // swap them because they be silly
+        registry_dependencies = m.dependencies;
+        dependencies = m.registry_dependencies;
+    }
+
+    // TODO: Uniq
+    for enrichment in crate::enrichments::read_dependencies(name) {
+        dependencies.push(enrichment);
+    }
+
+    // TODO: Uniq
+    for enrichment in crate::enrichments::read_registry_dependencies(name) {
+        registry_dependencies.push(enrichment);
+    }
+
+    VibePrimitive {
+        component_name,
+        doc,
+        example,
+        description,
+        source,
+        files,
+        import,
+        props,
+        // swap the names
+        registry_dependencies,
+        dependencies,
+    }
+}
 
 
 fn q(name: &str) -> Option<VibeMeta> {
@@ -343,12 +437,25 @@ mod tests {
     #[test]
     fn build_primitive() {
         // Setup: create a temporary directory structure for testing
-        let p = vibe_primitive("alert");
+        let p = vibe_primitive_from_dir("alert");
 
         assert_eq!(p.component_name, "Alert");
         assert_eq!(p.files.len(), 1);
         assert_ne!(p.example, Option::None);
         assert_ne!(p.description, Option::None);
         assert_eq!(p.import, "@/vibes/soul/primitives/alert".to_string());
+    }
+
+    #[test]
+    fn build_primitive_from_file() {
+        // Setup: create a temporary directory structure for testing
+        let p = vibe_primitive_from_file("calendar.tsx");
+
+        assert_eq!(p.component_name, "Calendar");
+        assert_eq!(p.files.len(), 1);
+        assert_ne!(p.doc, Option::None);
+        assert_eq!(p.example, Option::None);
+        assert_eq!(p.description, Option::None);
+        assert_eq!(p.import, "@/vibes/soul/primitives/calendar".to_string());
     }
 }

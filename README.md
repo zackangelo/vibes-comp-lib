@@ -5,9 +5,11 @@ This rust CLI will read a copy of the [Vibes](https://github.com/makeswift/vibes
 ## Setup
 
 Grab a copy of the vibes repo (I put it in `~/vibes` which is ignored by git)
+We are using our fork which has various metadata fixed for our usage
 
 ```sh
-git clone git@github.com:makeswift/vibes.git
+git clone git@github.com:mixlayer/vibes.git
+git checkout dds/components
 ```
 
 > [!info]
